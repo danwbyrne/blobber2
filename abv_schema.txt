@@ -10,6 +10,9 @@ Client Commands
 Server Commands
 ===============
 'pm' : 'player move'
-'np' : 'new player'
-'rv' : 'remove player'
 
+'np' : 'new player'
+'rp' : 'remove player'
+
+'nb' : 'new bullet'
+'rb' : 'remove bullet'
