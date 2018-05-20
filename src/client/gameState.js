@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import './App.css'
 import { ServerEvents } from './events/serverEvents'
 import { SmolBlob } from './blobs/blob'
+import { Bullet } from './blobs/bullet'
 import { Events } from '../shared/events'
 import { map } from 'rxjs/operators'
 
@@ -11,6 +12,7 @@ export class GameState extends Component {
 
     this.state = {
       blobs: [],
+      bullets: [],
       mainPlayerId: 0
     }
   }
@@ -37,6 +39,13 @@ export class GameState extends Component {
       ServerEvents.get(Events.REMOVE_PLAYER).pipe(
         map(event => event.id))
         .subscribe(this.removePlayer))
+
+    this.subscriptions.push(
+      ServerEvents.get(Events.NEW_BULLET)
+        .subscribe(this.addBullet(data.id)),
+      ServerEvents.get(Events.REMOVE_BULLET).pipe(
+        map(event => event.id))
+        .subscribe(this.removeBullet))
   }
 
   addPlayer = id => player => {
@@ -64,14 +73,42 @@ export class GameState extends Component {
     })
   }
 
+  addBullet = id => bullet => {
+    this.setState(prevState => {
+      let bullets = prevState.bullets
+
+      bullets.push(bullet)
+
+      return {bullets}
+    })
+  }
+
+  removeBullet = id => {
+    this.setState(prevState => {
+      const bullet = prevState.bullets.find(bullet => bullet.id === id)
+      if (bullet) {
+        const index = prevState.bullet.indexOf(bullet)
+        prevState.bullets.splice(index, 1)
+        return {
+          bullets: prevState.bullets
+        }
+      }
+    })
+  }
+
   render () {
     const players = this.state.blobs.map(blob => (
-      <SmolBlob key={blob.id} id={blob.id} location={blob.location} size={blob.size} />
+      <SmolBlob id={blob.id} location={blob.location} size={blob.size} />
+    ))
+
+    const bullets = this.state.bullets.map(bullet => (
+      <Bullet id={bullet.id} location={bullet.location} size={bullet.size} />
     ))
 
     return (
       <div>
         {players}
+        {bullets}
       </div>
     )
   }

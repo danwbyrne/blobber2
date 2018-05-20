@@ -1,13 +1,14 @@
 import { BlobsRepository } from '../gameState'
 import { round } from '../../shared/util'
 import { Events } from '../../shared/events'
+import { createBlob } from '../models/blob'
 
-const newPlayer = (digest, db) => data => {
+const newPlayer = (digest) => data => {
   const player = BlobsRepository.find(data.id)
   digest.add(Events.NEW_PLAYER.with(player))
 }
 
-const removeHandler = (digest, db) => data => {
+const removeHandler = (digest) => data => {
   const blob = BlobsRepository.find(data.id)
   if (blob) {
     BlobsRepository.remove(blob)
@@ -15,7 +16,13 @@ const removeHandler = (digest, db) => data => {
   }
 }
 
-const directionHandler = (digest, db) => data => {
+const newBullet = (digest) => data => {
+  console.log('we made it here')
+  BlobsRepository.save(createBlob(data.location.x, data.location.y, 10, 30, data.direction)
+  )
+}
+
+const directionHandler = (digest) => data => {
   const blob = BlobsRepository.find(data.id)
   if (blob) {
     blob.direction.x = data.direction.x
@@ -23,11 +30,16 @@ const directionHandler = (digest, db) => data => {
   }
 }
 
-const mouseClickHandler = (digest, db) => data => {
-  // pass
+const mouseClickHandler = (digest) => data => {
+  const blob = BlobsRepository.find(data.id)
+  if (blob) {
+    const tempId = blob.id * 100 + 11
+    console.log('got a click')
+    newBullet(digest, {id: tempId, location: blob.location, direction: blob.lookDir})
+  }
 }
 
-const mouseMoveHandler = (digest, db) => data => {
+const mouseMoveHandler = (digest) => data => {
   const blob = BlobsRepository.find(data.id)
   if (blob) {
     blob.lookDir.x = data.direction.x
@@ -35,11 +47,11 @@ const mouseMoveHandler = (digest, db) => data => {
   }
 }
 
-const updateAll = (digest, db) => data => {
+const updateAll = (digest) => data => {
   BlobsRepository.forEach(blob => {
     if ((blob.direction.x != null) || (blob.direction.y != null)) {
-      blob.location.x = round(blob.location.x + blob.direction.x * 5, 2)
-      blob.location.y = round(blob.location.y + blob.direction.y * 5, 2)
+      blob.location.x = round(blob.location.x + blob.direction.x * blob.speed, 2)
+      blob.location.y = round(blob.location.y + blob.direction.y * blob.speed, 2)
       digest.add(Events.PLAYER_MOVE.with({
         id: blob.id,
         location: blob.location
@@ -77,6 +89,7 @@ const setupHandler = (event, handler) => (eventBus, digest, db) => {
 
 export const eventHandlerSetups = [
   setupHandler(Events.NEW_PLAYER, newPlayer),
+  setupHandler(Events.NEW_BULLET, newBullet),
   setupHandler(Events.REMOVE_PLAYER, removeHandler),
   setupHandler(Events.UPDATE_DIRECTION, directionHandler),
   setupHandler(Events.MOUSE_CLICK, mouseClickHandler),

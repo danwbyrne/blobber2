@@ -9,6 +9,8 @@ import { BlobsRepository, createDigest } from './gameState'
 import { eventHandlerSetups } from './events/eventHandlers'
 import { Events } from '../shared/events'
 
+import { createVector } from '../shared/vector'
+
 const app = Express()
 app.use(Express.static('public'))
 
@@ -29,7 +31,7 @@ export function init (log, db) {
   eventHandlerSetups.forEach(setup => setup(eventBus, digest, db))
 
   // We will process these events when a client sends them
-  const clientEvents = ['ud', 'ch']
+  const clientEvents = ['ud', 'ch', 'mc']
 
   // configure websockets
   io.on('connection', socket => {
@@ -41,7 +43,7 @@ export function init (log, db) {
     })
 
     // create a new player
-    const player = BlobsRepository.save(createBlob(500, 500, 100))
+    const player = BlobsRepository.save(createBlob(500, 500, 100, 5, createVector(1, 0)))
     log(`User ${player.id} connected.`)
 
     // initialize the client

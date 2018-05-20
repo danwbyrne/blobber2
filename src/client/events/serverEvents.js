@@ -12,7 +12,7 @@ function createServerEvents () {
   })
 
   const os = createObservableSocket(socket, {
-    eventTypes: ['init', 'pm', 'np', 'rv', 'ch']
+    eventTypes: ['init', 'pm', 'np', 'rv', 'ch', 'mc']
   })
 
   return {

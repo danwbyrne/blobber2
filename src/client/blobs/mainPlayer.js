@@ -72,7 +72,8 @@ export class MainPlayer extends Component {
   }
 
   clickHandle = id => location => {
-    // pass
+    console.log('we clickin')
+    ServerEvents.notify(Events.MOUSE_CLICK.with({id: id}))
   }
 
   // Server Command Handlers
